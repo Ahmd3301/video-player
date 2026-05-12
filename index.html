@@ -3,315 +3,259 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>URL Player Pro</title>
+    <title>Pro Streamer - MX Edition</title>
 
-    <!-- المكتبات الأساسية (CDN) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.6/shaka-player.compiled.js"></script>
+    <!-- المحركات الأساسية -->
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.6/shaka-player.compiled.js"></script>
     <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
     <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
-    
-    <!-- Vidstack (للمستقبل) -->
-    <script type="module" src="https://cdn.vidstack.io/player.lib.js"></script>
-
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --bg-dark: #0d1117;
-            --header-bg: #161b22;
-            --item-active: #21262d;
-            --accent-blue: #58a6ff;
-            --text-main: #c9d1d9;
-            --text-dim: #8b949e;
-            --border: #30363d;
+            --bg: #05070a;
+            --card: #10141d;
+            --accent: #00e87a;
+            --text: #e1e4e8;
+            --dim: #8b949e;
+            --border: #1b2129;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
-            background-color: var(--bg-dark);
-            color: var(--text-main);
+            background: var(--bg);
+            color: var(--text);
             margin: 0; padding: 0;
-            font-family: 'Tajawal', sans-serif;
-            direction: ltr; /* لسهولة التعامل مع الروابط */
+            font-family: 'Inter', sans-serif;
+            direction: ltr; /* لسهولة قراءة الروابط */
             overflow-x: hidden;
         }
 
-        /* Animation & Interactivity */
-        .clickable { transition: transform 0.1s ease, background-color 0.2s; cursor: pointer; }
-        .clickable:active { transform: scale(0.97); background-color: var(--item-active) !important; }
-
-        /* Header */
-        .main-header {
-            background: var(--header-bg);
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 16px;
-            border-bottom: 1px solid var(--border);
-            position: sticky; top: 0; z-index: 100;
+        /* --- UI COMPACT DESIGN --- */
+        .header {
+            height: 56px; background: var(--bg);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 20px; border-bottom: 1px solid var(--border);
         }
-        .header-title { font-family: 'IBM Plex Mono', monospace; font-weight: 700; color: var(--accent-blue); font-size: 14px; }
+        .header h1 { font-size: 15px; font-weight: 700; color: var(--accent); letter-spacing: -0.5px; }
 
-        /* Navigation Tabs */
-        .tabs { display: flex; background: var(--header-bg); border-bottom: 1px solid var(--border); }
-        .tab-btn { flex: 1; padding: 12px; text-align: center; font-size: 11px; font-weight: bold; color: var(--text-dim); text-transform: uppercase; border-bottom: 2px solid transparent; }
-        .tab-btn.active { color: var(--accent-blue); border-bottom-color: var(--accent-blue); }
-
-        /* Player Section */
-        .player-container { width: 100%; aspect-ratio: 16/9; background: #000; position: relative; }
+        .player-container {
+            width: 100%; aspect-ratio: 16/9; background: #000;
+            position: sticky; top: 0; z-index: 1000;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
         video { width: 100%; height: 100%; }
 
-        /* Compact Input Section */
-        .input-box { padding: 16px; border-bottom: 1px solid var(--border); }
-        .input-group { margin-bottom: 12px; position: relative; }
-        .input-label { font-size: 9px; color: var(--accent-blue); font-weight: bold; position: absolute; top: -6px; left: 10px; background: var(--bg-dark); padding: 0 4px; }
-        .field-wrapper { display: flex; border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; background: rgba(0,0,0,0.2); }
-        input { background: transparent; border: none; color: #fff; flex: 1; font-size: 13px; outline: none; }
-        .paste-btn { color: var(--accent-blue); font-size: 10px; font-weight: bold; border: 1px dashed var(--accent-blue); padding: 2px 6px; border-radius: 4px; }
+        .input-area { padding: 20px; background: var(--bg); }
+        .input-wrapper {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 12px; padding: 12px 16px; margin-bottom: 12px;
+            display: flex; align-items: center;
+        }
+        input {
+            background: transparent; border: none; color: #fff;
+            flex: 1; font-size: 14px; outline: none; font-family: 'IBM Plex Mono';
+        }
+        .paste-btn { color: var(--accent); font-size: 11px; font-weight: 700; padding: 5px 10px; border: 1px dashed var(--accent); border-radius: 6px; margin-left: 10px; }
 
-        /* Buttons */
-        .btn-main { background: var(--accent-blue); color: #fff; width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; font-size: 14px; margin-top: 10px; }
+        .play-btn {
+            background: var(--accent); color: #000;
+            width: 100%; padding: 15px; border: none;
+            border-radius: 12px; font-weight: 700; font-size: 14px;
+            cursor: pointer; transition: 0.2s;
+        }
+        .play-btn:active { transform: scale(0.98); opacity: 0.9; }
 
-        /* Saved List (MX Player Style) */
-        .list-container { padding-bottom: 100px; }
-        .list-item { display: flex; align-items: center; padding: 10px 16px; border-bottom: 1px solid var(--border); width: 100%; }
-        .avatar { width: 34px; height: 34px; background: var(--item-active); border: 1px solid var(--border); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: 12px; font-weight: bold; color: var(--accent-blue); flex-shrink: 0; }
-        .info { flex: 1; min-width: 0; }
-        .title { font-size: 13px; font-weight: 600; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .subtitle { font-size: 10px; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        /* --- LIBRARY LIST (MX STYLE) --- */
+        .library-label { padding: 10px 20px; font-size: 12px; color: var(--dim); font-weight: 700; text-transform: uppercase; }
+        .list-item {
+            display: flex; align-items: center; padding: 12px 20px;
+            border-bottom: 1px solid var(--border); transition: 0.2s;
+        }
+        .list-item:active { background: var(--card); }
+        .icon-box {
+            width: 40px; height: 40px; background: var(--card);
+            border-radius: 10px; display: flex; align-items: center;
+            justify-content: center; font-size: 18px; margin-right: 15px;
+            border: 1px solid var(--border);
+        }
+        .item-info { flex: 1; min-width: 0; }
+        .item-title { font-size: 14px; font-weight: 600; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .item-sub { font-size: 11px; color: var(--dim); font-family: 'IBM Plex Mono'; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        /* Floating Action Menu (Long Press) */
-        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 1000; }
-        .modal.active { display: flex; }
-        .modal-content { background: var(--header-bg); width: 200px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
-        .modal-item { padding: 14px; font-size: 13px; text-align: center; border-bottom: 1px solid var(--border); color: var(--text-main); }
-        .modal-item.delete { color: #ff7b72; }
+        #status-bar {
+            position: fixed; bottom: 0; width: 100%; 
+            background: var(--accent); color: #000;
+            font-size: 10px; font-weight: 700; text-align: center;
+            padding: 3px 0; display: none; z-index: 2000;
+        }
 
-        /* Settings Bar */
-        .settings-row { display: flex; gap: 10px; padding: 0 16px 16px; }
-        .engine-btn { flex: 1; background: var(--header-bg); border: 1px solid var(--border); color: var(--text-dim); padding: 8px; font-size: 10px; border-radius: 6px; font-weight: bold; }
-        .engine-btn.active { border-color: var(--accent-blue); color: var(--accent-blue); }
-
-        #status-bar { font-size: 10px; padding: 4px 16px; color: var(--yellow); background: rgba(0,0,0,0.3); display: none; }
+        /* Context Menu */
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 3000; }
+        .modal-content { background: var(--card); width: 220px; border-radius: 16px; border: 1px solid var(--border); overflow: hidden; }
+        .modal-btn { padding: 15px; text-align: center; font-size: 13px; font-weight: 600; border-bottom: 1px solid var(--border); }
+        .modal-btn.delete { color: #ff4d4d; }
     </style>
 </head>
 <body>
 
-    <!-- Header -->
-    <div class="main-header">
-        <div class="header-title">URL PLAYER PRO</div>
-        <div style="font-size: 18px;">⚙️</div>
+    <div class="header">
+        <h1>PRO PLAYER <span>v2.0</span></h1>
+        <div style="color: var(--dim); font-size: 18px;" onclick="location.reload()">🔄</div>
     </div>
 
-    <!-- Player Area -->
     <div class="player-container">
-        <video id="main-player" playsinline crossorigin="anonymous"></video>
-        <div id="status-bar">Processing...</div>
+        <video id="video-player" crossorigin="anonymous" playsinline></video>
     </div>
 
-    <!-- Engine Toggle -->
-    <div class="settings-row" style="margin-top: 15px;">
-        <button class="engine-btn active clickable" id="btn-plyr" onclick="setEngine('plyr')">ENGINE: PLYR</button>
-        <button class="engine-btn clickable" id="btn-vidstack" onclick="setEngine('vidstack')">ENGINE: VIDSTACK</button>
-    </div>
+    <div id="status-bar">LOADING STREAM...</div>
 
-    <!-- Input Box -->
-    <div class="input-box">
-        <div class="input-group">
-            <span class="input-label">CONTENT NAME</span>
-            <div class="field-wrapper">
-                <input type="text" id="inp-name" placeholder="E.g. My Movie">
-            </div>
+    <div class="input-area">
+        <div class="input-wrapper">
+            <input type="text" id="main-url" placeholder="Paste link or page URL with ###extractor">
+            <div class="paste-btn" onclick="handlePaste()">PASTE</div>
         </div>
-        <div class="input-group">
-            <span class="input-label">URL / EXTRACTOR</span>
-            <div class="field-wrapper">
-                <input type="text" id="inp-url" placeholder="https://...###extractor">
-                <div class="btn-paste clickable" onclick="paste('inp-url')">PASTE</div>
-            </div>
-        </div>
-        <button class="btn-main clickable" onclick="handlePlayAction()">▶ PLAY NOW</button>
-        <button class="btn-main clickable" style="background: transparent; border: 1px solid var(--border); margin-top: 8px;" onclick="saveCurrent()">💾 SAVE TO LIBRARY</button>
+        <button class="play-btn" onclick="startSmartPlay()">START STREAMING</button>
     </div>
 
-    <!-- Library Tabs -->
-    <div class="tabs">
-        <div class="tab-btn active clickable" onclick="renderLibrary('all')">ALL</div>
-        <div class="tab-btn clickable" onclick="renderLibrary('link')">LINKS</div>
-        <div class="tab-item tab-btn clickable" onclick="renderLibrary('playlist')">PLAYLISTS</div>
+    <div class="library-label">Recent Library</div>
+    <div id="library-list">
+        <!-- Items go here -->
     </div>
 
-    <!-- Library List -->
-    <div class="list-container" id="library-list">
-        <!-- Items will appear here -->
-    </div>
-
-    <!-- Context Menu -->
-    <div class="modal" id="context-menu" onclick="closeMenu()">
+    <div class="modal" id="modal" onclick="this.style.display='none'">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <div class="modal-item clickable" onclick="editSelected()">✏️ Edit</div>
-            <div class="modal-item clickable delete" onclick="deleteSelected()">🗑️ Delete</div>
+            <div class="modal-btn" onclick="deleteItem()">Delete from list</div>
+            <div class="modal-btn" onclick="copyItem()">Copy URL</div>
         </div>
     </div>
 
-    <script>
-        let library = JSON.parse(localStorage.getItem('pro_library') || '[]');
-        let currentEngine = 'plyr';
-        let shakaPlayer, plyrInstance;
-        let selectedIndex = -1;
-        let pressTimer;
+<script>
+    let library = JSON.parse(localStorage.getItem('mx_library') || '[]');
+    let plyrInstance;
+    let shakaPlayer;
+    let selectedIdx = -1;
 
-        // --- Core Logic ---
+    // --- Core Playback Engine ---
 
-        function setEngine(engine) {
-            currentEngine = engine;
-            document.querySelectorAll('.engine-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(`btn-${engine}`).classList.add('active');
+    async function startSmartPlay(urlFromList = null) {
+        const url = urlFromList || document.getElementById('main-url').value.trim();
+        if (!url) return;
+
+        const video = document.getElementById('video-player');
+        const status = document.getElementById('status-bar');
+        status.style.display = 'block';
+
+        // Destroy previous instances
+        if (plyrInstance) plyrInstance.destroy();
+        if (shakaPlayer) await shakaPlayer.destroy();
+
+        const [cleanUrl, keysStr] = url.split('###');
+
+        // Logic for Extractor
+        if (keysStr && keysStr.includes('extract')) {
+            status.innerText = "EXTRACTING SOURCE...";
+            // We assume the extractor logic will eventually return a direct m3u8
         }
 
-        async function handlePlayAction() {
-            const url = document.getElementById('inp-url').value;
-            const name = document.getElementById('inp-name').value;
-            if(!url) return;
-
-            showStatus(`Preparing: ${name || 'Stream'}...`);
-
-            // Check for Extractor logic
-            if(url.includes('###extractor')) {
-                // Here we would call the Native Bridge in the APK
-                // For now, we simulate extraction
-                const cleanUrl = url.split('###')[0];
-                startVideo(cleanUrl, url); 
-            } else {
-                startVideo(url);
-            }
-        }
-
-        async function startVideo(url, rawInput = '') {
-            const video = document.getElementById('main-player');
-            const [mainUrl, keysStr] = url.split('###');
-
-            // Destroy previous instances
-            if(shakaPlayer) await shakaPlayer.destroy();
-            if(plyrInstance) plyrInstance.destroy();
-
-            // Initialize Shaka
-            shaka.polyfill.installAll();
-            shakaPlayer = new shaka.Player(video);
-
-            // Handle ClearKeys (DRM)
-            if(keysStr) {
-                const k = keysStr.split(':');
-                shakaPlayer.configure({
-                    drm: { clearKeys: { [b64ToHex(k[1].trim())]: b64ToHex(k[0].trim()) } }
-                });
-            }
-
-            try {
-                await shakaPlayer.load(mainUrl);
-                
-                if(currentEngine === 'plyr') {
-                    plyrInstance = new Plyr(video, {
-                        controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'settings', 'fullscreen']
-                    });
+        try {
+            // Check for MPD (DASH)
+            if (cleanUrl.includes('.mpd')) {
+                status.innerText = "DRM ENGINE: SHAKA PLAYER";
+                shaka.polyfill.installAll();
+                shakaPlayer = new shaka.Player(video);
+                if (keysStr && keysStr.includes(':')) {
+                    const [key, id] = keysStr.split(':');
+                    shakaPlayer.configure({ drm: { clearKeys: { [b64ToHex(id)]: b64ToHex(key) } } });
                 }
-                hideStatus();
-            } catch (e) {
-                console.error(e);
-                showStatus("Error loading stream. Check CORS or Keys.");
+                await shakaPlayer.load(cleanUrl);
+            } 
+            // Check for M3U8 (HLS)
+            else if (cleanUrl.includes('.m3u8')) {
+                status.innerText = "HLS ENGINE: HLS.JS";
+                if (Hls.isSupported()) {
+                    const hls = new Hls({
+                        xhrSetup: (xhr) => { xhr.withCredentials = false; }
+                    });
+                    hls.loadSource(cleanUrl);
+                    hls.attachMedia(video);
+                } else {
+                    video.src = cleanUrl;
+                }
+            } 
+            // MP4/Normal
+            else {
+                video.src = cleanUrl;
             }
-        }
 
-        // --- Library UI ---
-
-        function renderLibrary(filter = 'all') {
-            const list = document.getElementById('library-list');
-            list.innerHTML = '';
-            
-            library.forEach((item, index) => {
-                const d = document.createElement('div');
-                d.className = 'list-item clickable';
-                
-                // Long Press Logic
-                d.onmousedown = d.ontouchstart = () => {
-                    pressTimer = setTimeout(() => showMenu(index), 600);
-                };
-                d.onmouseup = d.ontouchend = () => clearTimeout(pressTimer);
-                d.onclick = () => {
-                    document.getElementById('inp-url').value = item.url;
-                    document.getElementById('inp-name').value = item.title;
-                    handlePlayAction();
-                };
-
-                d.innerHTML = `
-                    <div class="avatar">${item.title[0]}</div>
-                    <div class="info">
-                        <div class="title">${item.title}</div>
-                        <div class="subtitle">${item.url}</div>
-                    </div>
-                `;
-                list.appendChild(d);
+            // Init Plyr for the beautiful UI
+            plyrInstance = new Plyr(video, {
+                controls: ['play-large', 'play', 'progress', 'current-time', 'duration', 'mute', 'volume', 'settings', 'fullscreen']
             });
+
+            if (!urlFromList) saveToLibrary(cleanUrl);
+            status.style.display = 'none';
+        } catch (e) {
+            status.innerText = "ERROR: " + e.message;
+            status.style.background = "#ff4d4d";
         }
+    }
 
-        function saveCurrent() {
-            const name = document.getElementById('inp-name').value || 'Untitled';
-            const url = document.getElementById('inp-url').value;
-            if(!url) return;
+    // --- Library Management ---
 
-            library.unshift({ title: name, url: url });
-            localStorage.setItem('pro_library', JSON.stringify(library));
-            renderLibrary();
-        }
-
-        // --- Helper Functions ---
-
-        function b64ToHex(str) {
-            const raw = atob(str);
-            let result = '';
-            for (let i = 0; i < raw.length; i++) {
-                const hex = raw.charCodeAt(i).toString(16);
-                result += (hex.length === 2 ? hex : '0' + hex);
-            }
-            return result;
-        }
-
-        function showStatus(text) {
-            const bar = document.getElementById('status-bar');
-            bar.innerText = text;
-            bar.style.display = 'block';
-        }
-
-        function hideStatus() {
-            document.getElementById('status-bar').style.display = 'none';
-        }
-
-        async function paste(id) {
-            try {
-                const text = await navigator.clipboard.readText();
-                document.getElementById(id).value = text;
-            } catch (e) {}
-        }
-
-        // Context Menu Ops
-        function showMenu(index) {
-            selectedIndex = index;
-            document.getElementById('context-menu').classList.add('active');
-        }
-        function closeMenu() { document.getElementById('context-menu').classList.remove('active'); }
-        function deleteSelected() {
-            library.splice(selectedIndex, 1);
-            localStorage.setItem('pro_library', JSON.stringify(library));
-            renderLibrary();
-            closeMenu();
-        }
-
-        // Initialize
+    function saveToLibrary(url) {
+        if (library.some(i => i.url === url)) return;
+        library.unshift({ url, title: "Stream " + (library.length + 1) });
+        localStorage.setItem('mx_library', JSON.stringify(library));
         renderLibrary();
-    </script>
+    }
+
+    function renderLibrary() {
+        const container = document.getElementById('library-list');
+        container.innerHTML = library.map((item, idx) => `
+            <div class="list-item" onclick="startSmartPlay('${item.url}')" oncontextmenu="showModal(event, ${idx})">
+                <div class="icon-box">🎬</div>
+                <div class="item-info">
+                    <div class="item-title">${item.title}</div>
+                    <div class="item-sub">${item.url}</div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function showModal(e, idx) {
+        e.preventDefault();
+        selectedIdx = idx;
+        document.getElementById('modal').style.display = 'flex';
+    }
+
+    function deleteItem() {
+        library.splice(selectedIdx, 1);
+        localStorage.setItem('mx_library', JSON.stringify(library));
+        renderLibrary();
+        document.getElementById('modal').style.display = 'none';
+    }
+
+    // --- Utilities ---
+
+    async function handlePaste() {
+        const text = await navigator.clipboard.readText();
+        document.getElementById('main-url').value = text;
+    }
+
+    function b64ToHex(str) {
+        const b = atob(str.replace(/-/g, '+').replace(/_/g, '/'));
+        let res = "";
+        for (let i = 0; i < b.length; i++) {
+            let h = b.charCodeAt(i).toString(16);
+            res += (h.length === 1 ? '0' + h : h);
+        }
+        return res;
+    }
+
+    window.onload = renderLibrary;
+</script>
 </body>
-  </html>
+</html>
