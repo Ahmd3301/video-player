@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>🎬 مشغل الفيديو الأونلاين — Video Player</title>
+
+<!-- Plyr Player -->
+<link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+<script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
+
+<!-- الخطوط -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;600;700&family=Tajawal:wght@300;400;700;900&display=swap" rel="stylesheet">
+
+<style>
+/* ─── DESIGN SYSTEM ─── */
+:root {
+  --bg: #060809;
+  --surface: #0c0f12;
+  --panel: #10141a;
+  --border: #1a2030;
+  --border2: #232d3d;
+  --green: #00e87a;
+  --yellow: #ffcc00;
+  --red: #ff3d3d;
+  --blue: #3d9eff;
+  --cyan: #00d4ff;
+  --dim: #2a3545;
+  --text: #bccdd8;
+  --text-dim: #4a5e72;
+  --plyr-color-main: #00e87a;
+  --plyr-video-background: #000;
+  --plyr-font-family: 'IBM Plex Mono', monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Tajawal', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+body { padding: 12px; }
+
+/* ─── HEADER ─── */
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.header-left h1 {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: clamp(0.75rem, 3vw, 1rem);
+  color: var(--green);
+  letter-spacing: 0.06em;
+}
+
+.header-left p {
+  font-size: clamp(0.6rem, 2.5vw, 0.75rem);
+  color: var(--text-dim);
+  font-family: 'IBM Plex Mono', monospace;
+  margin-top: 5px;
+}
+
+/* ─── PANELS ─── */
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.panel-hd {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: clamp(0.65rem, 2vw, 0.8rem);
+  color: var(--text-dim);
+  letter-spacing: .05em;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* ─── BUTTONS ─── */
+.btn {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  border: 1px solid;
+  transition: all .15s;
+  background: transparent;
+}
+
+.btn-dim {
+  border-color: var(--dim);
+  color: var(--text-dim);
+}
+
+.btn-dim:hover {
+  background: var(--border);
+  color: #fff;
+}
+
+.btn-primary {
+  border-color: var(--green);
+  color: var(--green);
+  background: rgba(0, 232, 122, 0.1);
+}
+
+.btn-primary:hover {
+  background: rgba(0, 232, 122, 0.2);
+  transform: translateY(-1px);
+}
+
+.btn-danger {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+.btn-danger:hover {
+  background: rgba(255, 61, 61, 0.1);
+}
+
+/* ─── INPUT FIELDS ─── */
+.input-group {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.input-field {
+  flex: 1;
+  min-width: 200px;
+  padding: 10px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  color: var(--text);
+  font-family: 'Tajawal', sans-serif;
+  font-size: 0.9rem;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.input-field:focus {
+  border-color: var(--green);
+  box-shadow: 0 0 0 2px rgba(0, 232, 122, 0.1);
+}
+
+.input-field::placeholder {
+  color: var(--text-dim);
+}
+
+/* ─── VIDEO PANEL ─── */
+.video-panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+#video-wrapper {
+  background: #000;
+  width: 100%;
+  position: relative;
+  border-radius: 0;
+}
+
+#video-wrapper .plyr {
+  width: 100%;
+  border-radius: 0;
+}
+
+#video-wrapper video {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+/* ─── SAVED VIDEOS LIST ─── */
+.saved-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.video-card {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 140px;
+}
+
+.video-card:hover {
+  border-color: var(--green);
+  background: rgba(0, 232, 122, 0.05);
+  transform: translateY(-2px);
+}
+
+.video-card-title {
+  font-size: 0.85rem;
+  color: var(--text);
+  margin-bottom: 8px;
+  line-height: 1.3;
+  word-break: break-word;
+  flex: 1;
+}
+
+.video-card-url {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.6rem;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+  word-break: break-all;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.video-card-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: space-between;
+}
+
+.video-card-btn {
+  flex: 1;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.65rem;
+  padding: 6px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid var(--dim);
+  background: transparent;
+  color: var(--text-dim);
+  transition: all 0.15s;
+}
+
+.video-card-btn:hover {
+  border-color: var(--cyan);
+  color: var(--cyan);
+}
+
+.video-card-btn.delete:hover {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+/* ─── MESSAGES ─── */
+.msg-box {
+  text-align: center;
+  padding: 20px;
+  font-family: 'IBM Plex Mono', monospace;
+  color: var(--yellow);
+  grid-column: 1 / -1;
+  border-radius: 8px;
+}
+
+.error-text {
+  color: var(--red);
+}
+
+.success-text {
+  color: var(--green);
+}
+
+/* ─── FULLSCREEN ─── */
+body.custom-fs-active {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+body.custom-fs-active #app-root {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  z-index: 999999 !important;
+  background: #000 !important;
+  border-radius: 0 !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+}
+
+body.custom-fs-active .video-panel {
+  flex: 1 1 auto !important;
+  border-radius: 0 !important;
+  border: none !important;
+  height: 100% !important;
+  margin-bottom: 0 !important;
+}
+
+body.custom-fs-active #video-wrapper,
+body.custom-fs-active #video-wrapper .plyr,
+body.custom-fs-active #video-wrapper .plyr__video-wrapper,
+body.custom-fs-active #video-wrapper video {
+  height: 100% !important;
+  max-height: 100% !important;
+  border-radius: 0 !important;
+}
+
+body.custom-fs-active .header,
+body.custom-fs-active .input-panel,
+body.custom-fs-active .saved-panel,
+body.custom-fs-active > *:not(#app-root) {
+  display: none !important;
+}
+
+.fs-exit-btn {
+  display: none;
+  position: fixed;
+  top: max(12px, env(safe-area-inset-top));
+  left: 14px;
+  z-index: 9999999;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.75rem;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+}
+
+body.custom-fs-active .fs-exit-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+body.custom-fs-active .plyr__controls {
+  z-index: 10000000 !important;
+}
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 600px) {
+  body { padding: 8px; }
+  .panel { padding: 12px; }
+  .input-group { flex-direction: column; }
+  .input-field { min-width: 100%; }
+  .btn { font-size: 0.7rem; padding: 6px 12px; }
+  .saved-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+}
+</style>
+</head>
+<body>
+
+<button class="fs-exit-btn" id="fs-exit-btn" onclick="toggleCustomFullscreen()">✕ خروج</button>
+
+<div id="app-root">
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-left">
+      <h1>🎬 // Video Player</h1>
+      <p id="header-subtitle">مشغل فيديو أونلاين بسيط وسهل</p>
+    </div>
+  </div>
+
+  <!-- INPUT PANEL -->
+  <div class="panel input-panel">
+    <div class="panel-hd">🔗 أضف رابط فيديو أو نص وصف</div>
+    <div class="input-group">
+      <input 
+        type="text" 
+        id="video-url-input" 
+        class="input-field" 
+        placeholder="الصق رابط الفيديو هنا (MP4, WebM, HLS, DASH, إلخ)"
+      >
+      <button class="btn btn-primary" onclick="pasteFromClipboard()">
+        📋 Paste
+      </button>
+      <button class="btn btn-primary" onclick="playVideo()">
+        ▶ Play
+      </button>
+    </div>
+    <div class="input-group">
+      <input 
+        type="text" 
+        id="video-title-input" 
+        class="input-field" 
+        placeholder="أضف وصف/عنوان للفيديو (اختياري)"
+      >
+      <button class="btn btn-dim" onclick="saveVideoToStorage()">
+        💾 Save
+      </button>
+    </div>
+  </div>
+
+  <!-- PLAYER PANEL -->
+  <div class="video-panel">
+    <div id="video-wrapper">
+      <video 
+        id="video" 
+        style="width:100%;" 
+        controls 
+        crossorigin 
+        playsinline 
+        autoplay
+      ></video>
+    </div>
+  </div>
+
+  <!-- SAVED VIDEOS PANEL -->
+  <div class="panel saved-panel">
+    <div class="panel-hd">
+      💾 الفيديوهات المحفوظة
+      <span id="saved-count" style="color: var(--cyan);">0</span>
+    </div>
+    <div id="saved-grid" class="saved-grid">
+      <div class="msg-box">لا توجد فيديوهات محفوظة حتى الآن</div>
+    </div>
+  </div>
+</div>
+
+<script>
+let plyrPlayer;
+let savedVideos = [];
+let isCustomFullscreen = false;
+let clonedFsBtn = null;
+
+const STORAGE_KEY = 'savedVideos_' + new Date().getFullYear() + '_' + (new Date().getMonth() + 1);
+
+// ─── INITIALIZE ───
+function initializeApp() {
+  loadSavedVideos();
+  renderSavedVideos();
+  setupPlyrPlayer();
+  setupEventListeners();
+}
+
+// ─── SETUP PLYR ───
+function setupPlyrPlayer() {
+  const video = document.getElementById('video');
+  plyrPlayer = new Plyr(video, {
+    controls: ['play-large', 'restart', 'rewind', 'play', 'fast-forward', 'progress', 'current-time', 'duration', 'mute', 'volume', 'settings', 'pip', 'fullscreen'],
+    settings: ['quality', 'speed', 'loop'],
+    autoplay: false,
+    quality: { default: 'auto', options: ['auto'] }
+  });
+
+  plyrPlayer.on('ready', () => {
+    const controls = document.querySelector('#video-wrapper .plyr__controls');
+    if (controls) {
+      const originalFsBtn = controls.querySelector('[data-plyr="fullscreen"]');
+      if (originalFsBtn) {
+        clonedFsBtn = originalFsBtn.cloneNode(true);
+        originalFsBtn.parentNode.replaceChild(clonedFsBtn, originalFsBtn);
+        clonedFsBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          toggleCustomFullscreen();
+        });
+      }
+    }
+  });
+}
+
+// ─── EVENT LISTENERS ───
+function setupEventListeners() {
+  document.getElementById('video-url-input').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') playVideo();
+  });
+}
+
+// ─── FULLSCREEN ───
+function toggleCustomFullscreen() {
+  if (!isCustomFullscreen) {
+    document.body.classList.add('custom-fs-active');
+    document.body.style.overflow = 'hidden';
+    try {
+      if (screen.orientation && screen.orientation.lock) {
+        screen.orientation.lock('landscape').catch(() => {});
+      }
+    } catch (e) {}
+    isCustomFullscreen = true;
+    if (clonedFsBtn) clonedFsBtn.classList.add('plyr__control--pressed');
+  } else {
+    document.body.classList.remove('custom-fs-active');
+    document.body.style.overflow = '';
+    try {
+      if (screen.orientation && screen.orientation.unlock) {
+        screen.orientation.unlock();
+      }
+    } catch (e) {}
+    isCustomFullscreen = false;
+    if (clonedFsBtn) clonedFsBtn.classList.remove('plyr__control--pressed');
+  }
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && isCustomFullscreen) {
+    toggleCustomFullscreen();
+  }
+});
+
+// ─── CLIPBOARD ───
+async function pasteFromClipboard() {
+  try {
+    const text = await navigator.clipboard.readText();
+    document.getElementById('video-url-input').value = text;
+    showNotification('✅ تم اللصق من الحافظة', 'success');
+  } catch (err) {
+    showNotification('❌ فشل الوصول للحافظة', 'error');
+  }
+}
+
+// ─── PLAY VIDEO ───
+function playVideo() {
+  const url = document.getElementById('video-url-input').value.trim();
+  
+  if (!url) {
+    showNotification('⚠️ الرجاء إدخال رابط فيديو', 'error');
+    return;
+  }
+
+  const video = document.getElementById('video');
+  
+  // تحديد نوع الفيديو تلقائياً
+  if (url.includes('.m3u8')) {
+    // HLS
+    if (Hls && Hls.isSupported()) {
+      const hls = new Hls();
+      hls.loadSource(url);
+      hls.attachMedia(video);
+      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        video.play();
+        showNotification('▶ جاري التشغيل (HLS)', 'success');
+      });
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      video.src = url;
+      video.play();
+      showNotification('▶ جاري التشغيل (Native HLS)', 'success');
+    } else {
+      showNotification('❌ متصفحك لا يدعم HLS', 'error');
+    }
+  } else if (url.includes('.mpd')) {
+    // DASH
+    showNotification('⚠️ DASH يتطلب مكتبة إضافية. استخدم MP4 أو HLS', 'error');
+  } else {
+    // MP4, WebM, Ogg, إلخ
+    video.src = url;
+    video.play();
+    showNotification('▶ جاري التشغيل', 'success');
+  }
+}
+
+// ─── SAVE VIDEO ───
+function saveVideoToStorage() {
+  const url = document.getElementById('video-url-input').value.trim();
+  const title = document.getElementById('video-title-input').value.trim();
+
+  if (!url) {
+    showNotification('⚠️ أضف رابط فيديو لحفظه', 'error');
+    return;
+  }
+
+  const videoObj = {
+    id: Date.now(),
+    url: url,
+    title: title || url.substring(url.lastIndexOf('/') + 1),
+    dateAdded: new Date().toLocaleString('ar-SA')
+  };
+
+  savedVideos.unshift(videoObj);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(savedVideos));
+  
+  document.getElementById('video-url-input').value = '';
+  document.getElementById('video-title-input').value = '';
+  
+  renderSavedVideos();
+  showNotification('✅ تم حفظ الفيديو بنجاح', 'success');
+}
+
+// ─── LOAD SAVED VIDEOS ───
+function loadSavedVideos() {
+  const stored = localStorage.getItem(STORAGE_KEY);
+  savedVideos = stored ? JSON.parse(stored) : [];
+}
+
+// ─── RENDER SAVED VIDEOS ───
+function renderSavedVideos() {
+  const grid = document.getElementById('saved-grid');
+  const count = document.getElementById('saved-count');
+  
+  count.textContent = savedVideos.length;
+
+  if (savedVideos.length === 0) {
+    grid.innerHTML = '<div class="msg-box">لا توجد فيديوهات محفوظة حتى الآن 📭</div>';
+    return;
+  }
+
+  grid.innerHTML = savedVideos.map(video => `
+    <div class="video-card">
+      <div>
+        <div class="video-card-title">📹 ${escapeHtml(video.title)}</div>
+        <div class="video-card-url" title="${escapeHtml(video.url)}">${escapeHtml(video.url)}</div>
+      </div>
+      <div class="video-card-actions">
+        <button class="video-card-btn" onclick="playFromSaved(${video.id})">▶ Play</button>
+        <button class="video-card-btn delete" onclick="deleteVideo(${video.id})">🗑 Delete</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ─── PLAY FROM SAVED ───
+function playFromSaved(id) {
+  const video = savedVideos.find(v => v.id === id);
+  if (video) {
+    document.getElementById('video-url-input').value = video.url;
+    document.getElementById('video-title-input').value = video.title;
+    playVideo();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+}
+
+// ─── DELETE VIDEO ───
+function deleteVideo(id) {
+  if (confirm('هل تريد حذف هذا الفيديو؟ 🗑️')) {
+    savedVideos = savedVideos.filter(v => v.id !== id);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(savedVideos));
+    renderSavedVideos();
+    showNotification('✅ تم الحذف بنجاح', 'success');
+  }
+}
+
+// ─── UTILITIES ───
+function escapeHtml(text) {
+  const map = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  };
+  return text.replace(/[&<>"']/g, m => map[m]);
+}
+
+function showNotification(message, type = 'info') {
+  const notification = document.createElement('div');
+  notification.style.cssText = `
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    padding: 12px 16px;
+    background: ${type === 'error' ? 'rgba(255, 61, 61, 0.9)' : type === 'success' ? 'rgba(0, 232, 122, 0.9)' : 'rgba(61, 158, 255, 0.9)'};
+    color: #fff;
+    border-radius: 6px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.85rem;
+    z-index: 1000;
+    animation: slideInUp 0.3s ease;
+  `;
+  notification.textContent = message;
+  document.body.appendChild(notification);
+
+  setTimeout(() => {
+    notification.style.animation = 'slideOutDown 0.3s ease';
+    setTimeout(() => notification.remove(), 300);
+  }, 3000);
+}
+
+// ─── ADD ANIMATION ───
+const style = document.createElement('style');
+style.textContent = `
+  @keyframes slideInUp {
+    from { transform: translateY(100px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  @keyframes slideOutDown {
+    from { transform: translateY(0); opacity: 1; }
+    to { transform: translateY(100px); opacity: 0; }
+  }
+`;
+document.head.appendChild(style);
+
+// Initialize
+window.addEventListener('load', initializeApp);
+</script>
+</body>
+</html>
